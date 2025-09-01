@@ -1,0 +1,132 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urdfly"
+version = "1.0.0"
+description = "A Python-based toolkit for working with URDF (Unified Robot Description Format) files"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Yunlong Dong", email = "yunlongdong@outlook.com"},
+    {name = "Daoming Chen", email = "chendaoming99@outlook.com"},
+]
+maintainers = [
+    {name = "Yunlong Dong", email = "yunlongdong@outlook.com"},
+    {name = "Daoming Chen", email = "chendaoming99@outlook.com"},
+
+]
+keywords = [
+    "robotics",
+    "urdf", 
+    "kinematics",
+    "dynamics",
+    "visualization",
+    "robot-modeling",
+    "denavit-hartenberg",
+    "modified-dh"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20.0",
+    "sympy>=1.8.0",
+    "vtk>=9.0.0",
+    "anytree>=2.8.0",
+    "transformations>=2020.1.1",
+    "trimesh>=3.15.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black>=22.0",
+    "flake8>=4.0",
+    "isort>=5.0"
+]
+docs = [
+    "sphinx>=4.0",
+    "sphinx-rtd-theme>=1.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/URDFly"
+Repository = "https://github.com/yourusername/URDFly"
+Documentation = "https://github.com/yourusername/URDFly/docs"
+"Bug Tracker" = "https://github.com/yourusername/URDFly/issues"
+
+[project.scripts]
+urdfly = "main:main"
+
+[tool.setuptools]
+packages = ["codegen", "codegen.sympybotics", "codegen.sympybotics.dynamics", "codegen.sympybotics.dynident", "codegen.sympybotics.symcode", "codegen.sympybotics.tools", "codegen.sympybotics.tests", "third_parties"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.urdf", "*.STL", "*.stl", "*.obj", "*.png"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  __pycache__
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["urdfly"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.uv]
+index-url = "https://mirrors.aliyun.com/pypi/simple/"

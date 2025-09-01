@@ -164,4 +164,4 @@ temp/
 *.pptx
 
 dex-urdf-main/
-.gitignore
+uv.lock
