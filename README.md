@@ -55,13 +55,55 @@ After clicking `ok` (this will take a while to do the convex decomposition) the 
 
 ## Installation
 
-### Prerequisites
+### Quick Setup with uv (Recommended)
 
-- Python 3.8+
-- Required Python packages (install via pip):
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager that can automatically handle virtual environments and dependencies from `pyproject.toml`.
 
-  ```
-  pip install numpy sympy pyqt5 vtk anytree transformations
+1. **Install uv** (if you haven't already):
+   ```bash
+   # On Windows
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   
+   # On macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   
+   # Or via pip
+   pip install uv
+   ```
+
+2. **Clone and setup the project**:
+   ```bash
+   git clone https://github.com/Democratizing-Dexterous/URDFly.git
+   cd URDFly
+   uv sync
+   ```
+
+3. **Run the application**:
+   
+   **Option A: Direct run (recommended for quick testing)**:
+   ```bash
+   uv run python main.py
+   ```
+   
+   **Option B: Activate virtual environment first (recommended for development)**:
+   ```bash
+   # Activate the virtual environment
+   source .venv/bin/activate  # On macOS/Linux
+   # or
+   .venv\Scripts\activate     # On Windows
+   
+   # Then run the application
+   python main.py
+   ```
+
+That's it! `uv` will automatically create a virtual environment, install all dependencies from `pyproject.toml`, and you're ready to go.
+
+### Alternative: Manual Installation with pip
+
+- **Prerequisites**: Python 3.8+
+- **Install dependencies manually**:
+  ```bash
+  pip install PySide6 numpy sympy vtk anytree transformations trimesh
   ```
 
 ## Usage
