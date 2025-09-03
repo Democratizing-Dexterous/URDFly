@@ -46,12 +46,13 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "numpy>=1.20.0",
-    "sympy>=1.8.0",
-    "vtk>=9.0.0",
-    "anytree>=2.8.0",
-    "transformations>=2020.1.1",
-    "trimesh>=3.15.0"
+    "PySide6",
+    "numpy",
+    "sympy",
+    "vtk",
+    "anytree",
+    "transformations",
+    "trimesh"
 ]
 
 [project.optional-dependencies]
@@ -67,10 +68,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/URDFly"
-Repository = "https://github.com/yourusername/URDFly"
-Documentation = "https://github.com/yourusername/URDFly/docs"
-"Bug Tracker" = "https://github.com/yourusername/URDFly/issues"
+Homepage = "https://github.com/Democratizing-Dexterous/URDFly"
+Repository = "https://github.com/Democratizing-Dexterous/URDFly"
+Documentation = "https://github.com/Democratizing-Dexterous/URDFly/docs"
+"Bug Tracker" = "https://github.com/Democratizing-Dexterous/URDFly/issues"
 
 [project.scripts]
 urdfly = "main:main"
