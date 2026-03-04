@@ -2,7 +2,7 @@
 
 ## News
 
-* [20260302] The ultimate STEP to URDF tool is released at [](https://github.com/Democratizing-Dexterous/URDFlyS2U/assets/main.png)
+* [20260302] The ultimate STEP to URDF tool is released at [https://step2urdf.top](https://step2urdf.top)
 <p align="center">
   <img src='https://github.com/Democratizing-Dexterous/URDFlyS2U/blob/main/assets/main.png' width="80%" />
 </p>
