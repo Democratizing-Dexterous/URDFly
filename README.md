@@ -7,6 +7,8 @@
   <img src='https://github.com/Democratizing-Dexterous/URDFlyS2U/blob/main/assets/main.png' width="80%" />
 </p>
 
+https://github.com/Democratizing-Dexterous/step2urdf
+
 ## Overview
 
 URDFly is a Python-based toolkit for working with URDF (Unified Robot Description Format) files, specifically designed for robotic arm modeling, simulation, and control. The project provides tools for parsing, visualizing, and analyzing robotic systems defined in URDF format, with a focus on axes visulazation, urdf editing, MDH parameter conversion, kinematics calculation, and dynamics regressor codegen.
