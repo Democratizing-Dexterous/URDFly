@@ -46,6 +46,7 @@ import vtk
 from urdf_parser import URDFParser
 from urdf_vtk_model import URDFModel
 from simplify_mesh import create_detailed_approximation
+from translations import TranslationManager, tr, get_translation_manager
 
 
 class DragDropVTKWidget(QVTKRenderWindowInteractor):
@@ -88,6 +89,7 @@ class URDFViewer(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.translation_manager = get_translation_manager()
         self.models = []  # List to store loaded URDF models
         self.models_collision = []
         self.chains = []  # List to store kinematic chains
@@ -97,7 +99,7 @@ class URDFViewer(QMainWindow):
         self.selected_chain_index = 0  # Index of the currently selected chain
         self.current_urdf_file = None  # Path to the currently loaded URDF file
         self.collision_mesh_files = None
-        
+
         self.joint_sliders = []  # List to store joint angle sliders
         self.joint_values = []  # List to store joint angle values
         self.revolute_joints = []  # List to store revolute joints
@@ -108,8 +110,8 @@ class URDFViewer(QMainWindow):
 
     def init_ui(self):
         """Initialize the user interface"""
-        self.setWindowTitle("URDFly")
-        
+        self.setWindowTitle(tr("window_title"))
+
         # Set window size
         window_width = 1200
         window_height = 800
@@ -136,13 +138,15 @@ class URDFViewer(QMainWindow):
 
         # Create chain selection combo box
         chain_selection_layout = QVBoxLayout()
-        chain_selection_layout.addWidget(QLabel("Select Chain:"))
+        self.select_chain_label = QLabel(tr("select_chain"))
+        chain_selection_layout.addWidget(self.select_chain_label)
         self.chain_combo = QComboBox()
         self.chain_combo.currentIndexChanged.connect(self.on_chain_selected)
         chain_selection_layout.addWidget(self.chain_combo)
-        
+
         # Create link list widget
-        chain_selection_layout.addWidget(QLabel("Links:"))
+        self.links_label = QLabel(tr("links"))
+        chain_selection_layout.addWidget(self.links_label)
         self.link_list = QListWidget()
         self.link_list.setSelectionMode(QListWidget.SingleSelection)
         self.link_list.itemSelectionChanged.connect(self.on_link_selection_changed)
@@ -153,30 +157,31 @@ class URDFViewer(QMainWindow):
         chain_selection_widget.setLayout(chain_selection_layout)
 
         # Create button for opening URDF file
-        btn_open = QPushButton("Open URDF")
-        btn_open.clicked.connect(self.open_urdf_file)
-        
+        self.btn_open = QPushButton(tr("open_urdf"))
+        self.btn_open.clicked.connect(self.open_urdf_file)
+
         # Create Edit button
-        btn_edit = QPushButton("Edit URDF")
-        btn_edit.clicked.connect(self.edit_urdf_file)
-        btn_edit.setToolTip("Open the current URDF file in an XML editor")
+        self.btn_edit = QPushButton(tr("edit_urdf"))
+        self.btn_edit.clicked.connect(self.edit_urdf_file)
+        self.btn_edit.setToolTip(tr("edit_urdf_tooltip"))
 
         # Create MDH button
-        btn_mdh = QPushButton("Show MDH Parameters")
-        btn_mdh.clicked.connect(self.show_mdh_parameters)
-        
-        btn_decomp = QPushButton("Decompose As Collision")
-        btn_decomp.clicked.connect(self.decompose_collision_meshes)
+        self.btn_mdh = QPushButton(tr("show_mdh"))
+        self.btn_mdh.clicked.connect(self.show_mdh_parameters)
 
-        btn_set_joints = QPushButton("Set Joints")
-        btn_set_joints.clicked.connect(self.open_set_joints_dialog)
+        self.btn_decomp = QPushButton(tr("decompose_collision"))
+        self.btn_decomp.clicked.connect(self.decompose_collision_meshes)
+
+        self.btn_set_joints = QPushButton(tr("set_joints"))
+        self.btn_set_joints.clicked.connect(self.open_set_joints_dialog)
 
         # Create transparency controls
         transparency_group = QGroupBox("")
         transparency_layout = QVBoxLayout()
 
         # Transparency slider
-        transparency_layout.addWidget(QLabel("Transparency:"))
+        self.transparency_label = QLabel(tr("transparency"))
+        transparency_layout.addWidget(self.transparency_label)
         self.transparency_slider = QSlider(Qt.Horizontal)
         self.transparency_slider.setMinimum(0)
         self.transparency_slider.setMaximum(100)
@@ -189,18 +194,18 @@ class URDFViewer(QMainWindow):
         transparency_group.setLayout(transparency_layout)
 
         # Create checkboxes for frame visibility
-        visibility_group = QGroupBox("Visibility")
+        self.visibility_group = QGroupBox(tr("visibility_settings"))
         visibility_layout = QVBoxLayout()
-        
-        self.cb_link_frames = QCheckBox("Show Link Frames")
+
+        self.cb_link_frames = QCheckBox(tr("show_link_frames"))
         self.cb_link_frames.setChecked(True)
         self.cb_link_frames.stateChanged.connect(self.toggle_link_frames)
-        
-        self.cb_mdh_frames = QCheckBox("Show MDH Frames")
+
+        self.cb_mdh_frames = QCheckBox(tr("show_mdh_frames"))
         self.cb_mdh_frames.setChecked(False)
         self.cb_mdh_frames.stateChanged.connect(self.toggle_mdh_frames)
-        
-        self.cb_collision = QCheckBox("Show Collision")
+
+        self.cb_collision = QCheckBox(tr("show_collision"))
         self.cb_collision.setChecked(True)
         self.cb_collision.stateChanged.connect(self.toggle_collision)
         
@@ -208,23 +213,37 @@ class URDFViewer(QMainWindow):
         visibility_layout.addWidget(self.cb_mdh_frames)
         visibility_layout.addWidget(self.cb_collision)
 
-        visibility_group.setLayout(visibility_layout)
+        self.visibility_group.setLayout(visibility_layout)
 
         # Add widgets to left panel
-        left_layout.addWidget(QLabel("Robot Structure:"))
+        self.robot_structure_label = QLabel(tr("robot_structure"))
+        left_layout.addWidget(self.robot_structure_label)
         left_layout.addWidget(chain_selection_widget)
-        left_layout.addWidget(btn_open)
-        left_layout.addWidget(btn_edit)
-        left_layout.addWidget(btn_mdh)
-        left_layout.addWidget(btn_decomp)
-        left_layout.addWidget(btn_set_joints)
-        
+        left_layout.addWidget(self.btn_open)
+        left_layout.addWidget(self.btn_edit)
+        left_layout.addWidget(self.btn_mdh)
+        left_layout.addWidget(self.btn_decomp)
+        left_layout.addWidget(self.btn_set_joints)
+
         left_layout.addWidget(transparency_group)
-        left_layout.addWidget(visibility_group)
+        left_layout.addWidget(self.visibility_group)
+
+        # Add language selection
+        lang_layout = QHBoxLayout()
+        self.lang_label = QLabel(tr("language"))
+        lang_layout.addWidget(self.lang_label)
+        self.language_combo = QComboBox()
+        self.language_combo.addItem(tr("lang_zh"), "zh_CN")
+        self.language_combo.addItem(tr("lang_en"), "en")
+        self.language_combo.setCurrentIndex(0)  # Default to Chinese
+        self.language_combo.currentIndexChanged.connect(self.change_language)
+        lang_layout.addWidget(self.language_combo)
+        left_layout.addLayout(lang_layout)
+
         left_layout.addStretch()
-        
+
         # Add current file label at the bottom of left panel
-        self.current_file_label = QLabel("Current File: None")
+        self.current_file_label = QLabel(tr("current_file") + " " + tr("current_file_none"))
         self.current_file_label.setWordWrap(True)
         self.current_file_label.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
         left_layout.addWidget(self.current_file_label)
@@ -246,26 +265,26 @@ class URDFViewer(QMainWindow):
         self.joint_layout = QVBoxLayout(self.joint_container)
         
         # Add a label explaining the sliders
-        joint_label = QLabel("Adjust joint angles:")
-        self.joint_layout.addWidget(joint_label)
-        
+        self.joint_label = QLabel(tr("adjust_joint_angles"))
+        self.joint_layout.addWidget(self.joint_label)
+
         # We'll add sliders dynamically when a URDF is loaded
-        
+
         # Set the container as the scroll area's widget
         joint_scroll_area.setWidget(self.joint_container)
-        
+
         # Create a group box to contain the scroll area
-        joint_group = QGroupBox("Joints Control")
-        joint_group_layout = QVBoxLayout(joint_group)
-        
+        self.joint_group = QGroupBox(tr("joints_control"))
+        joint_group_layout = QVBoxLayout(self.joint_group)
+
         # Add reset and random buttons
         buttons_layout = QHBoxLayout()
-        btn_reset = QPushButton("Reset")
-        btn_reset.clicked.connect(self.reset_joints)
-        btn_random = QPushButton("Random")
-        btn_random.clicked.connect(self.randomize_joints)
-        buttons_layout.addWidget(btn_reset)
-        buttons_layout.addWidget(btn_random)
+        self.btn_reset = QPushButton(tr("reset"))
+        self.btn_reset.clicked.connect(self.reset_joints)
+        self.btn_random = QPushButton(tr("random"))
+        self.btn_random.clicked.connect(self.randomize_joints)
+        buttons_layout.addWidget(self.btn_reset)
+        buttons_layout.addWidget(self.btn_random)
         # Units toggle next to Reset/Random
         self.units_combo = QComboBox()
         self.units_combo.addItems(["rad", "deg"])
@@ -277,7 +296,7 @@ class URDFViewer(QMainWindow):
         joint_group_layout.addWidget(joint_scroll_area)
         
         # Add joint group to right panel
-        right_layout.addWidget(joint_group, 1)  # Give it a stretch factor of 1
+        right_layout.addWidget(self.joint_group, 1)  # Give it a stretch factor of 1
         
         # Set fixed width for right panel
         right_panel.setFixedWidth(300)
@@ -407,13 +426,13 @@ class URDFViewer(QMainWindow):
 
             except Exception as e:
                 QMessageBox.critical(
-                    self, "Error", f"Failed to load URDF file: {str(e)}"
+                    self, tr("error"), tr("load_urdf_failed", str(e))
                 )
-    
+
     def open_urdf_file(self):
         """Open a URDF file dialog and load the selected file"""
         filename, _ = QFileDialog.getOpenFileName(
-            self, "Open URDF File", "", "URDF Files (*.urdf)"
+            self, tr("dialog_open_urdf"), "", tr("dialog_urdf_filter")
         )
         
         if filename:
@@ -452,7 +471,7 @@ class URDFViewer(QMainWindow):
 
         except Exception as e:
             QMessageBox.warning(
-                self, "Warning", f"Failed to load model {name}: {str(e)}"
+                self, tr("warning"), tr("load_model_failed", name, str(e))
             )
 
     def clear_models(self):
@@ -506,10 +525,10 @@ class URDFViewer(QMainWindow):
         """Populate the chain combo box and link list"""
         self.chain_combo.clear()
         self.link_list.clear()
-        
+
         # Add each chain to the combo box
         for i, chain in enumerate(self.chains):
-            self.chain_combo.addItem(f"Chain {i+1}: {chain['name']}", i)
+            self.chain_combo.addItem(tr("chain_pattern", i+1, chain['name']), i)
         
         # Select the first chain by default if available
         if self.chains:
@@ -597,22 +616,22 @@ class URDFViewer(QMainWindow):
     def toggle_mdh_frames(self, state):
         """Toggle visibility of MDH frames"""
         visible = state == Qt.Checked
-        
+
         # If we want to show MDH frames
         if visible:
             if not self.current_urdf_file:
                 QMessageBox.warning(
-                    self, "Warning", "Please load a URDF file first. [MDH]"
+                    self, tr("warning"), tr("please_load_urdf_mdh")
                 )
                 self.cb_mdh_frames.setChecked(False)
                 return
-            
+
             if self.selected_chain:
                 # Always recreate MDH frames to ensure they're up to date
                 self.create_mdh_frames(self.selected_chain)
             else:
                 QMessageBox.warning(
-                    self, "Warning", "Please select a chain first."
+                    self, tr("warning"), tr("please_select_chain_first")
                 )
                 self.cb_mdh_frames.setChecked(False)
                 return
@@ -714,13 +733,13 @@ class URDFViewer(QMainWindow):
         """Show MDH parameters in a dialog"""
         if not self.selected_chain:
             QMessageBox.warning(
-                self, "Warning", "Please select a chain first to view MDH parameters."
+                self, tr("warning"), tr("please_select_chain_mdh")
             )
             return
-        
+
         if not self.current_urdf_file:
             QMessageBox.warning(
-                self, "Warning", "Please load a URDF file first. [SHOW MDH]"
+                self, tr("warning"), tr("please_load_urdf_show_mdh")
             )
             return
         
@@ -751,14 +770,14 @@ class URDFViewer(QMainWindow):
     def open_set_joints_dialog(self):
         """Open a dialog to input joint angles and apply them to the robot and sliders."""
         if not self.revolute_joints:
-            QMessageBox.warning(self, "Warning", "No revolute joints available. Load a URDF first.")
+            QMessageBox.warning(self, tr("warning"), tr("no_revolute_joints"))
             return
-        
+
         dialog = QDialog(self)
-        dialog.setWindowTitle("Set Joints")
+        dialog.setWindowTitle(tr("set_joints_title"))
         vbox = QVBoxLayout(dialog)
-        
-        vbox.addWidget(QLabel("Enter joint angles (comma or space separated):"))
+
+        vbox.addWidget(QLabel(tr("enter_joint_angles")))
         angles_edit = QLineEdit()
         # Pre-fill with current values in currently selected unit for convenience
         try:
@@ -772,39 +791,39 @@ class URDFViewer(QMainWindow):
         except Exception:
             pass
         vbox.addWidget(angles_edit)
-        
+
         units_row = QHBoxLayout()
-        units_row.addWidget(QLabel("Units:"))
+        units_row.addWidget(QLabel(tr("units")))
         units_combo = QComboBox()
         units_combo.addItems(["rad", "deg"])
         units_combo.setCurrentText("deg" if self.display_in_degrees else "rad")
         units_row.addWidget(units_combo)
         units_row.addStretch(1)
         vbox.addLayout(units_row)
-        
+
         buttons_row = QHBoxLayout()
-        btn_apply = QPushButton("Apply")
-        btn_cancel = QPushButton("Cancel")
+        btn_apply = QPushButton(tr("apply"))
+        btn_cancel = QPushButton(tr("btn_cancel"))
         buttons_row.addStretch(1)
         buttons_row.addWidget(btn_cancel)
         buttons_row.addWidget(btn_apply)
         vbox.addLayout(buttons_row)
-        
+
         def parse_and_apply():
             raw = angles_edit.text().strip()
             if not raw:
-                QMessageBox.warning(dialog, "Warning", "Please input angles.")
+                QMessageBox.warning(dialog, tr("warning"), tr("please_input_angles"))
                 return
             # Support comma or whitespace separated values
             tokens = raw.replace(",", " ").split()
             try:
                 vals = [float(t) for t in tokens]
             except ValueError:
-                QMessageBox.critical(dialog, "Error", "Invalid number in input list.")
+                QMessageBox.critical(dialog, tr("error"), tr("invalid_number"))
                 return
             n = len(self.revolute_joints)
             if len(vals) != n:
-                QMessageBox.warning(dialog, "Warning", f"Expected {n} values, got {len(vals)}.")
+                QMessageBox.warning(dialog, tr("warning"), tr("expected_values", n, len(vals)))
                 return
             # Convert to radians if needed
             if units_combo.currentText() == "deg":
@@ -894,15 +913,15 @@ class URDFViewer(QMainWindow):
         """Clear all joint sliders"""
         # Clear the joint values
         self.joint_values = []
-        
+
         # Clear the sliders list
         self.joint_sliders = []
         self.joint_value_labels = []
-        
-        # Remove all widgets from the joint layout
+
+        # Remove all widgets from the joint layout (except joint_label)
         if hasattr(self, 'joint_layout'):
-            while self.joint_layout.count():
-                item = self.joint_layout.takeAt(0)
+            while self.joint_layout.count() > 1:  # Keep the first item (joint_label)
+                item = self.joint_layout.takeAt(1)  # Start from index 1 to skip joint_label
                 widget = item.widget()
                 if widget:
                     widget.deleteLater()
@@ -1037,7 +1056,7 @@ class URDFViewer(QMainWindow):
         """Open the current URDF file in the XML editor"""
         if not self.current_urdf_file:
             QMessageBox.warning(
-                self, "Warning", "Please load a URDF file first. [Edit]"
+                self, tr("warning"), tr("please_load_urdf_edit")
             )
             return
         
@@ -1139,23 +1158,23 @@ class URDFViewer(QMainWindow):
             
         except Exception as e:
             QMessageBox.critical(
-                self, "Error", f"Failed to update model from XML: {str(e)}"
+                self, tr("error"), tr("update_model_failed", str(e))
             )
-    
+
     def update_current_file_label(self):
         """Update the current file label with the current URDF file path"""
         if self.current_urdf_file:
             # Extract just the filename from the path for cleaner display
             filename = os.path.basename(self.current_urdf_file)
-            self.current_file_label.setText(f"Current File: {filename}")
+            self.current_file_label.setText(tr("current_file") + " " + filename)
         else:
-            self.current_file_label.setText("Current File: None")
+            self.current_file_label.setText(tr("current_file") + " " + tr("current_file_none"))
             
     def decompose_collision_meshes(self):
         """Handle decomposition of collision meshes"""
         if not self.collision_mesh_files:
             QMessageBox.warning(
-                self, "Warning", "No collision meshes available. Please load a URDF file first."
+                self, tr("warning"), tr("no_collision_meshes")
             )
             return
         
@@ -1167,7 +1186,12 @@ class URDFViewer(QMainWindow):
         if decomposed_mesh_files is not None:
             self.edit_urdf_file(replace_collision=True)
 
-    
+    def change_language(self, index):
+        """Handle language change from the language combo box"""
+        lang_code = self.language_combo.itemData(index)
+        if lang_code:
+            self.translation_manager.set_language(lang_code, self)
+
     def closeEvent(self, event):
         """Handle window close event"""
         # Close any open XML editor windows

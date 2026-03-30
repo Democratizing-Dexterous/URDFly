@@ -165,3 +165,9 @@ temp/
 
 dex-urdf-main/
 .gitignore
+
+
+.claude/
+
+CLAUDE.md
+

@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from simplify_mesh import create_detailed_approximation
+from translations import tr
 
 class DecompDialog(QDialog):
     """Dialog for configuring mesh decomposition parameters"""
@@ -28,17 +29,17 @@ class DecompDialog(QDialog):
         
     def init_ui(self):
         """Initialize the user interface"""
-        self.setWindowTitle("Decompose Collision Meshes")
+        self.setWindowTitle(tr("decomp_title"))
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
-        
+
         # Main layout
         main_layout = QVBoxLayout(self)
-        
+
         # Create table for mesh files and maxConvexHulls values
         self.mesh_table = QTableWidget()
         self.mesh_table.setColumnCount(2)  # Mesh file, maxConvexHulls
-        self.mesh_table.setHorizontalHeaderLabels(["Mesh File", "maxConvexHulls"])
+        self.mesh_table.setHorizontalHeaderLabels([tr("mesh_file"), tr("max_convex_hulls")])
         
         # Set row count
         self.mesh_table.setRowCount(len(self.collision_mesh_files))
@@ -75,11 +76,11 @@ class DecompDialog(QDialog):
         
         # Create buttons at the bottom
         buttons_layout = QHBoxLayout()
-        
-        self.btn_cancel = QPushButton("Cancel")
+
+        self.btn_cancel = QPushButton(tr("btn_cancel"))
         self.btn_cancel.clicked.connect(self.reject)
-        
-        self.btn_ok = QPushButton("OK")
+
+        self.btn_ok = QPushButton(tr("btn_ok"))
         self.btn_ok.clicked.connect(self.accept)
         
         buttons_layout.addStretch()
@@ -107,29 +108,29 @@ class DecompDialog(QDialog):
             decomp_params = {}
             for mesh_file, max_hulls in self.max_convex_hulls.items():
                 decomp_params[mesh_file] = max_hulls
-            
+
             # Process each mesh file with its specific maxConvexHulls value
             all_decomposed_files = []
             for mesh_file, max_hulls in decomp_params.items():
                 # Call the decomposition function with the specific parameters for this mesh
                 decomposed_files = create_detailed_approximation([mesh_file], maxConvexHulls=max_hulls)
                 all_decomposed_files.extend(decomposed_files)
-            
+
             # Store the result
             self.decomposed_mesh_files = all_decomposed_files
-            
+
             # Show success message
             QMessageBox.information(
                 self,
-                "Decomposition Complete",
-                f"Successfully decomposed {len(all_decomposed_files)} mesh files."
+                tr("decomposition_complete"),
+                tr("decomposition_success", len(all_decomposed_files))
             )
         except Exception as e:
             # Show error message if decomposition fails
             QMessageBox.critical(
                 self,
-                "Decomposition Error",
-                f"Error during decomposition: {str(e)}"
+                tr("decomposition_error"),
+                tr("decomposition_error_msg", str(e))
             )
     
     def get_decomposed_mesh_files(self):

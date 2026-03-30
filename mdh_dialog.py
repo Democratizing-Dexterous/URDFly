@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QTextCharFormat, QColor, QSyntaxHighlighter
 
 from codegen import forward_kinematics, dynamic_base_regressor, jacobian
+from translations import tr
 
 import re
 
@@ -140,41 +141,41 @@ class MDHDialog(QDialog):
         
     def init_ui(self):
         """Initialize the user interface"""
-        self.setWindowTitle(f"MDH Parameters - {self.chain_name}")
+        self.setWindowTitle(tr("mdh_title") + f" - {self.chain_name}")
         self.setMinimumWidth(1000)
         self.setMinimumHeight(600)
-        
+
         # Main layout
         main_layout = QHBoxLayout(self)
-        
+
         # Create left panel for MDH parameters
         left_panel = self.create_left_panel()
-        
+
         # Create right panel for code display
         right_panel = self.create_right_panel()
-        
+
         # Add panels to main layout with splitter
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_panel)
         splitter.addWidget(right_panel)
         splitter.setSizes([400, 600])  # Set initial sizes
-        
+
         main_layout.addWidget(splitter)
         
     def create_left_panel(self):
         """Create the left panel with MDH parameters table and buttons"""
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
-        
+
         # Add title
-        title_label = QLabel("MDH Parameters")
+        title_label = QLabel(tr("mdh_parameters"))
         title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
         left_layout.addWidget(title_label)
-        
+
         # Create table for MDH parameters
         self.mdh_table = QTableWidget()
         self.mdh_table.setColumnCount(5)  # Joint, theta, d, a, alpha
-        self.mdh_table.setHorizontalHeaderLabels(["Joint", "θ (rad)", "d", "a", "α (rad)"])
+        self.mdh_table.setHorizontalHeaderLabels([tr("joint"), tr("theta_rad"), "d", "a", tr("alpha_rad")])
         
         # Set row count
         self.mdh_table.setRowCount(len(self.mdh_parameters))
@@ -197,17 +198,17 @@ class MDHDialog(QDialog):
         
         # Create buttons
         buttons_layout = QHBoxLayout()
-        
-        self.btn_forward_kinematics = QPushButton("Forward Kinematics")
+
+        self.btn_forward_kinematics = QPushButton(tr("forward_kinematics"))
         self.btn_forward_kinematics.clicked.connect(self.on_forward_kinematics)
-        
-        self.btn_jacobian = QPushButton("Jacobian")
+
+        self.btn_jacobian = QPushButton(tr("jacobian"))
         self.btn_jacobian.clicked.connect(self.on_jacobian)
-        
-        self.btn_dynamic_base_regressor = QPushButton("Dynamic Base Regressor")
+
+        self.btn_dynamic_base_regressor = QPushButton(tr("dynamic_base_regressor"))
         self.btn_dynamic_base_regressor.clicked.connect(self.on_dynamic_base_regressor)
-        
-        self.btn_save_mdh = QPushButton("Save MDH")
+
+        self.btn_save_mdh = QPushButton(tr("save_mdh"))
         self.btn_save_mdh.clicked.connect(self.on_save_mdh)
         
         buttons_layout.addWidget(self.btn_forward_kinematics)
@@ -227,23 +228,23 @@ class MDHDialog(QDialog):
         
         # Create splitter for top and bottom sections
         vertical_splitter = QSplitter(Qt.Vertical)
-        
+
         # Top section for .h header file
-        header_group = QGroupBox("Header File or Python Usage")
+        header_group = QGroupBox(tr("header_file_or_python_usage"))
 
         header_layout = QVBoxLayout(header_group)
-        
+
         # Add copy button for header
         header_button_layout = QHBoxLayout()
-        self.btn_copy_header = QPushButton("Copy")
+        self.btn_copy_header = QPushButton(tr("copy"))
         self.btn_copy_header.clicked.connect(self.on_copy_header)
         header_button_layout.addWidget(self.btn_copy_header)
         header_button_layout.addStretch()
         header_layout.addLayout(header_button_layout)
-        
+
         self.header_text_edit = QTextEdit()
         self.header_text_edit.setReadOnly(True)
-        self.header_text_edit.setPlaceholderText("Header file or Python usage content will be displayed here...")
+        self.header_text_edit.setPlaceholderText(tr("header_placeholder"))
         # Set monospace font for code
         font = QFont("Consolas", 10)
         font.setStyleHint(QFont.Monospace)
@@ -251,22 +252,22 @@ class MDHDialog(QDialog):
         # Add syntax highlighter
         self.header_highlighter = CppSyntaxHighlighter(self.header_text_edit.document())
         header_layout.addWidget(self.header_text_edit)
-        
+
         # Bottom section for .cpp file
-        cpp_group = QGroupBox(".cpp Source File")
+        cpp_group = QGroupBox(tr("cpp_source_file"))
         cpp_layout = QVBoxLayout(cpp_group)
-        
+
         # Add copy button for cpp
         cpp_button_layout = QHBoxLayout()
-        self.btn_copy_cpp = QPushButton("Copy")
+        self.btn_copy_cpp = QPushButton(tr("copy"))
         self.btn_copy_cpp.clicked.connect(self.on_copy_cpp)
         cpp_button_layout.addWidget(self.btn_copy_cpp)
         cpp_button_layout.addStretch()
         cpp_layout.addLayout(cpp_button_layout)
-        
+
         self.cpp_text_edit = QTextEdit()
         self.cpp_text_edit.setReadOnly(True)
-        self.cpp_text_edit.setPlaceholderText("Source file content will be displayed here...")
+        self.cpp_text_edit.setPlaceholderText(tr("cpp_placeholder"))
         # Set monospace font for code
         font = QFont("Consolas", 10)
         font.setStyleHint(QFont.Monospace)
@@ -322,62 +323,62 @@ class MDHDialog(QDialog):
     def update_mdh_parameters(self, mdh_parameters):
         """Update the MDH parameters in the table"""
         self.mdh_parameters = mdh_parameters
-        
+
         # Update table row count
         self.mdh_table.setRowCount(len(self.mdh_parameters))
-        
+
         # Fill table with new MDH parameters
         for i, params in enumerate(self.mdh_parameters):
             # Joint name
-            joint_item = QTableWidgetItem(f"Joint {i+1}")
+            joint_item = QTableWidgetItem(tr("joint") + f" {i+1}")
             self.mdh_table.setItem(i, 0, joint_item)
-            
+
             # MDH parameters: theta, d, a, alpha
             for j, param in enumerate(params):
                 param_item = QTableWidgetItem(f"{param:.4f}")
                 self.mdh_table.setItem(i, j+1, param_item)
-    
+
     def on_save_mdh(self):
         """Save MDH parameters to a text file"""
         file_path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save MDH Parameters",
+            tr("dialog_save_mdh"),
             f"{self.chain_name}_mdh_parameters.txt",
-            "Text Files (*.txt)"
+            tr("dialog_text_files")
         )
-        
+
         if file_path:
             try:
                 with open(file_path, 'w') as f:
                     # Write header
-                    f.write(f"MDH Parameters for {self.chain_name}\n")
+                    f.write(tr("mdh_file_header", self.chain_name) + "\n")
                     f.write("=" * 50 + "\n\n")
-                    
+
                     # Write column headers
-                    f.write(f"{'Joint':<10} {'theta (rad)':<12} {'d':<12} {'a':<12} {'α (rad)':<12}\n")
+                    f.write(f"{tr('joint'):<10} {tr('theta_rad'):<12} {'d':<12} {'a':<12} {tr('alpha_rad'):<12}\n")
                     f.write("-" * 60 + "\n")
-                    
+
                     # Write MDH parameters
                     for i, params in enumerate(self.mdh_parameters):
                         joint_name = f"Joint {i+1}"
                         theta, d, a, alpha = params
                         f.write(f"{joint_name:<10} {theta:<4.8f} {d:<4.8f} {a:<4.8f} {alpha:<4.8f}\n")
-                    
+
                     f.write("\n" + "=" * 50 + "\n")
-                    f.write(f"Total joints: {len(self.mdh_parameters)}\n")
-                
-                QMessageBox.information(self, "Success", f"MDH parameters saved to:\n{file_path}")
+                    f.write(tr("mdh_total_joints", len(self.mdh_parameters)) + "\n")
+
+                QMessageBox.information(self, tr("success"), tr("mdh_saved", file_path))
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save MDH parameters:\n{str(e)}")
-    
+                QMessageBox.critical(self, tr("error"), tr("failed_to_save_mdh", str(e)))
+
     def on_copy_header(self):
         """Copy header code to clipboard"""
         clipboard = QApplication.clipboard()
         clipboard.setText(self.header_text_edit.toPlainText())
-        QMessageBox.information(self, "Copied", "Header code copied to clipboard!")
-    
+        QMessageBox.information(self, tr("copied"), tr("header_copied"))
+
     def on_copy_cpp(self):
         """Copy source code to clipboard"""
         clipboard = QApplication.clipboard()
         clipboard.setText(self.cpp_text_edit.toPlainText())
-        QMessageBox.information(self, "Copied", "Source code copied to clipboard!")
+        QMessageBox.information(self, tr("copied"), tr("source_copied"))
